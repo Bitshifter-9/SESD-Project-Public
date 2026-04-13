@@ -1,0 +1,173 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  VIEWER
+  ADMIN
+}
+
+enum SubscriptionState {
+  ACTIVE
+  GRACE_PERIOD
+  SUSPENDED
+  CANCELLED
+  EXPIRED
+}
+
+enum BillingCycle {
+  MONTHLY
+  YEARLY
+}
+
+enum ContentType {
+  MOVIE
+  SERIES
+  DOCUMENTARY
+}
+
+enum JobStatus {
+  QUEUED
+  PROCESSING
+  SUCCESS
+  FAILED
+  DEAD_LETTER
+}
+
+model User {
+  id           String         @id @default(cuid())
+  email        String         @unique
+  passwordHash String
+  role         UserRole       @default(VIEWER)
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  profiles     Profile[]
+  subscription Subscription?
+  sessions     Session[]
+}
+
+model Profile {
+  id              String           @id @default(cuid())
+  userId          String
+  name            String
+  isChild         Boolean          @default(false)
+  createdAt       DateTime         @default(now())
+  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  watchHistory    WatchHistory[]
+  recommendations Recommendation[]
+  streamTokens    StreamToken[]
+}
+
+model Plan {
+  id           String         @id @default(cuid())
+  name         String
+  price        Decimal        @db.Decimal(10, 2)
+  maxDevices   Int
+  billingCycle BillingCycle
+  createdAt    DateTime       @default(now())
+  subscriptions Subscription[]
+}
+
+model Subscription {
+  id        String            @id @default(cuid())
+  userId    String            @unique
+  planId    String
+  state     SubscriptionState @default(ACTIVE)
+  startDate DateTime
+  endDate   DateTime
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
+  user      User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  plan      Plan              @relation(fields: [planId], references: [id])
+}
+
+model Content {
+  id                String           @id @default(cuid())
+  title             String
+  description       String
+  type              ContentType
+  releaseYear       Int
+  durationMinutes   Int
+  rating            Float
+  createdAt         DateTime         @default(now())
+  contentGenres     ContentGenre[]
+  watchHistory      WatchHistory[]
+  recommendations   Recommendation[]
+  streamTokens      StreamToken[]
+}
+
+model Genre {
+  id            String         @id @default(cuid())
+  name          String         @unique
+  contentGenres ContentGenre[]
+}
+
+model ContentGenre {
+  contentId String
+  genreId   String
+  content   Content @relation(fields: [contentId], references: [id], onDelete: Cascade)
+  genre     Genre   @relation(fields: [genreId], references: [id], onDelete: Cascade)
+
+  @@id([contentId, genreId])
+}
+
+model WatchHistory {
+  id                     String   @id @default(cuid())
+  profileId              String
+  contentId              String
+  watchedDurationSeconds Int
+  completed              Boolean  @default(false)
+  lastWatchedAt          DateTime @default(now())
+  profile                Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  content                Content  @relation(fields: [contentId], references: [id], onDelete: Cascade)
+
+  @@unique([profileId, contentId])
+}
+
+model Recommendation {
+  id          String   @id @default(cuid())
+  profileId   String
+  contentId   String
+  score       Float
+  generatedAt DateTime @default(now())
+  profile     Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  content     Content  @relation(fields: [contentId], references: [id], onDelete: Cascade)
+
+  @@index([profileId, score])
+}
+
+model Session {
+  id         String   @id @default(cuid())
+  userId     String
+  deviceInfo String
+  ipAddress  String
+  createdAt  DateTime @default(now())
+  expiresAt  DateTime
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model StreamToken {
+  id        String   @id @default(cuid())
+  profileId String
+  contentId String
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  profile   Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  content   Content  @relation(fields: [contentId], references: [id], onDelete: Cascade)
+}
+
+model Job {
+  id          String    @id @default(cuid())
+  type        String
+  status      JobStatus @default(QUEUED)
+  payload     Json
+  attempts    Int       @default(0)
+  scheduledAt DateTime
+  processedAt DateTime?
+}

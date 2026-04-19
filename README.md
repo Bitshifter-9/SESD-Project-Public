@@ -173,6 +173,10 @@ Best deployment split:
 
 If you deploy separately, set the frontend `VITE_API_BASE` to your backend public URL.
 
+## Live Deployment
+
+- Frontend: https://sesd-project-public-1.onrender.com/
+
 ## Troubleshooting
 
 - If login fails, ensure the backend is connected to the correct PostgreSQL database and the seed has been run.

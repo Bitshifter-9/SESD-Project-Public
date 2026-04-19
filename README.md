@@ -97,8 +97,26 @@ Key variables:
 - `PORT`
 - `RECOMMENDATION_TTL_SECONDS`
 - `DEFAULT_SESSION_TTL_HOURS`
+- `TMDB_API_KEY` (optional, for bulk catalog import)
+- `TMDB_IMPORT_PAGES` (optional, default `3`)
 
 For production frontend deployment, set `VITE_API_BASE` to your backend API URL ending in `/api`.
+
+## Expand Catalog With TMDB
+
+If you want a much larger catalog than the default seed data, import metadata from TMDB.
+
+1. Create a TMDB API key from [developer.themoviedb.org](https://developer.themoviedb.org).
+2. Set `TMDB_API_KEY` in `backend/.env`.
+3. Optionally set `TMDB_IMPORT_PAGES` (each page is up to 20 items for movie and TV import).
+4. Run:
+
+```bash
+cd backend
+npm run import:catalog
+```
+
+The importer upserts content and genres into your existing schema. It imports metadata only (title, overview, genres, rating, year), not media files.
 
 ## Demo Flow
 

@@ -99,6 +99,7 @@ Key variables:
 - `DEFAULT_SESSION_TTL_HOURS`
 - `TMDB_API_KEY` (optional, for bulk catalog import)
 - `TMDB_IMPORT_PAGES` (optional, default `3`)
+- `TVMAZE_IMPORT_PAGES` (optional, default `10`, no API key needed)
 
 For production frontend deployment, set `VITE_API_BASE` to your backend API URL ending in `/api`.
 
@@ -117,6 +118,20 @@ npm run import:catalog
 ```
 
 The importer upserts content and genres into your existing schema. It imports metadata only (title, overview, genres, rating, year), not media files.
+
+## Expand Catalog With TVMaze (No API Key)
+
+If you want a free provider without API-key setup, use TVMaze.
+
+1. Optionally set `TVMAZE_IMPORT_PAGES` in `backend/.env`.
+2. Run:
+
+```bash
+cd backend
+npm run import:catalog:tvmaze
+```
+
+This importer adds and updates series metadata (title, description, genres, rating, release year) in your existing catalog tables.
 
 ## Demo Flow
 

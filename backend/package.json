@@ -10,7 +10,8 @@
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "seed": "tsx prisma/seed.ts",
-    "import:catalog": "tsx scripts/importTmdb.ts"
+    "import:catalog": "tsx scripts/importTmdb.ts",
+    "import:catalog:tvmaze": "tsx scripts/importTvMaze.ts"
   },
   "dependencies": {
     "@prisma/client": "^5.21.1",
